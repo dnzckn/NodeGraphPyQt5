@@ -1,0 +1,107 @@
+{
+    "root0": {
+        "name": "root0",
+        "inputs": [],
+        "outputs": [
+            {
+                "connected_to": "root0_0",
+                "output_port": "output",
+                "input_port": "inlet"
+            },
+            {
+                "connected_to": "root0_1",
+                "output_port": "output",
+                "input_port": "inlet"
+            }
+        ]
+    },
+    "root0_0": {
+        "name": "root0_0",
+        "inputs": [
+            {
+                "connected_from": "root0",
+                "input_port": "inlet",
+                "output_port": "output"
+            }
+        ],
+        "outputs": [
+            {
+                "connected_to": "root0_0_0",
+                "output_port": "output",
+                "input_port": "inlet"
+            }
+        ]
+    },
+    "root0_0_0": {
+        "name": "root0_0_0",
+        "inputs": [
+            {
+                "connected_from": "root0_0",
+                "input_port": "inlet",
+                "output_port": "output"
+            }
+        ],
+        "outputs": []
+    },
+    "root0_1": {
+        "name": "root0_1",
+        "inputs": [
+            {
+                "connected_from": "root0",
+                "input_port": "inlet",
+                "output_port": "output"
+            }
+        ],
+        "outputs": [
+            {
+                "connected_to": "root0_1_0",
+                "output_port": "output",
+                "input_port": "inlet"
+            },
+            {
+                "connected_to": "root0_1_1",
+                "output_port": "output",
+                "input_port": "inlet"
+            }
+        ]
+    },
+    "root0_1_0": {
+        "name": "root0_1_0",
+        "inputs": [
+            {
+                "connected_from": "root0_1",
+                "input_port": "inlet",
+                "output_port": "output"
+            }
+        ],
+        "outputs": [
+            {
+                "connected_to": "root0_1_0_0",
+                "output_port": "output",
+                "input_port": "inlet"
+            }
+        ]
+    },
+    "root0_1_0_0": {
+        "name": "root0_1_0_0",
+        "inputs": [
+            {
+                "connected_from": "root0_1_0",
+                "input_port": "inlet",
+                "output_port": "output"
+            }
+        ],
+        "outputs": []
+    },
+    "root0_1_1": {
+        "name": "root0_1_1",
+        "inputs": [
+            {
+                "connected_from": "root0_1",
+                "input_port": "inlet",
+                "output_port": "output"
+            }
+        ],
+        "outputs": []
+    }
+}

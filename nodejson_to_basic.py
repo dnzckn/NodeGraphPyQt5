@@ -1,90 +1,81 @@
 import json
 
-def build_hierarchy(nodes, connections, root_name):
+def build_simple_hierarchy(nodes, connections):
     """
-    Build a hierarchical structure from nodes and connections.
+    Build a simplified structure showing direct connections (N+1 neighbors).
 
     Args:
         nodes (dict): Dictionary of nodes with their attributes.
         connections (list): List of connections between nodes.
-        root_name (str): The name of the root node.
 
     Returns:
-        dict: A nested dictionary representing the hierarchy.
+        dict: A dictionary where each node has its immediate connections.
     """
-    # Create a lookup for node ids to names and their data.
-    node_lookup = {node_data['name']: node_id for node_id, node_data in nodes.items()}
-    
-    # Create a dictionary to hold node connections.
-    hierarchy = {}
+    # Create a lookup for node ids to names.
+    node_lookup = {node_id: node_data['name'] for node_id, node_data in nodes.items()}
 
-    # Initialize the structure for each node.
-    def initialize_node(node_name):
-        node_id = node_lookup[node_name]
-        return {
+    # Create a dictionary to store the simplified hierarchy.
+    simple_hierarchy = {}
+
+    # Initialize each node with empty lists for inputs and outputs.
+    for node_id, node_name in node_lookup.items():
+        simple_hierarchy[node_name] = {
             'name': node_name,
             'inputs': [],
-            'outputs': [],
-            'kids': []
+            'outputs': []
         }
 
-    # Build the connection mapping for inputs and outputs.
-    def map_connections():
-        conn_map = {node_id: {'inputs': [], 'outputs': []} for node_id in nodes}
-        for conn in connections:
-            output_node = conn['out'][0]
-            input_node = conn['in'][0]
-            conn_map[output_node]['outputs'].append(nodes[input_node]['name'])
-            conn_map[input_node]['inputs'].append(nodes[output_node]['name'])
-        return conn_map
+    # Map the connections to nodes with input/output port details.
+    for conn in connections:
+        output_node, output_port = conn['out']
+        input_node, input_port = conn['in']
 
-    # Recursively add children nodes to the hierarchy.
-    def recursive_add_children(node, conn_map):
-        node_id = node_lookup[node['name']]
-        node['inputs'] = conn_map[node_id]['inputs']
-        node['outputs'] = conn_map[node_id]['outputs']
-        
-        for output_node in conn_map[node_id]['outputs']:
-            child_node = initialize_node(output_node)
-            node['kids'].append(recursive_add_children(child_node, conn_map))
-        
-        return node
+        output_node_name = node_lookup[output_node]
+        input_node_name = node_lookup[input_node]
 
-    # Build the hierarchy starting from the root node.
-    conn_map = map_connections()
-    root_node = initialize_node(root_name)
-    return recursive_add_children(root_node, conn_map)
+        # Add to the outputs of the output node.
+        simple_hierarchy[output_node_name]['outputs'].append({
+            'connected_to': input_node_name,
+            'output_port': output_port,
+            'input_port': input_port
+        })
+
+        # Add to the inputs of the input node.
+        simple_hierarchy[input_node_name]['inputs'].append({
+            'connected_from': output_node_name,
+            'input_port': input_port,
+            'output_port': output_port
+        })
+
+    return simple_hierarchy
 
 def convert_json_structure(json_data):
     """
-    Convert the graph JSON structure into a simplified hierarchical structure.
+    Convert the graph JSON structure into a simplified N+1 neighbor structure.
 
     Args:
         json_data (dict): The input graph data in JSON format.
 
     Returns:
-        dict: The simplified hierarchical structure.
+        dict: The simplified structure showing direct relationships (N+1 neighbors).
     """
     nodes = json_data['nodes']
     connections = json_data['connections']
 
-    # Assuming root node is always 'root0'
-    root_name = "root0"
-    
-    # Build the hierarchy starting from the root
-    return build_hierarchy(nodes, connections, root_name)
+    # Build the simplified structure
+    return build_simple_hierarchy(nodes, connections)
 
 def save_hierarchy_to_json(hierarchy, file_path):
     """
-    Save the hierarchical structure to a JSON file.
+    Save the simplified structure to a JSON file.
 
     Args:
-        hierarchy (dict): The hierarchical structure of the graph.
+        hierarchy (dict): The simplified graph structure (N+1 neighbor model).
         file_path (str): Path to save the JSON file.
     """
     with open(file_path, 'w') as f:
         json.dump(hierarchy, f, indent=4)
-    print(f"Hierarchy saved to {file_path}")
+    print(f"Simplified structure saved to {file_path}")
 
 # Example usage:
 if __name__ == "__main__":
@@ -92,8 +83,8 @@ if __name__ == "__main__":
     with open('demo.json', 'r') as f:
         graph_json = json.load(f)
 
-    # Convert the JSON to the hierarchical structure
-    hierarchy = convert_json_structure(graph_json)
+    # Convert the JSON to the simplified N+1 neighbor structure
+    simple_hierarchy = convert_json_structure(graph_json)
 
-    # Save the simplified hierarchical structure to a new JSON file
-    save_hierarchy_to_json(hierarchy, 'simplified_graph_structure.json')
+    # Save the simplified structure to a new JSON file
+    save_hierarchy_to_json(simple_hierarchy, 'nw_struct.json')
