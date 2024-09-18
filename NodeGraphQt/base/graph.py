@@ -5,6 +5,7 @@ import json
 import os
 import re
 from pathlib import Path
+from pathlib import PosixPath
 
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtCore import pyqtSignal
@@ -1909,34 +1910,25 @@ class NodeGraph(QtCore.QObject):
         """
         Saves the current node graph session layout to a `JSON` formatted file.
 
-        See Also:
-            :meth:`NodeGraph.serialize_session`,
-            :meth:`NodeGraph.deserialize_session`,
-            :meth:`NodeGraph.load_session`,
-
         Args:
             file_path (str): path to the saved node layout.
         """
         serialized_data = self.serialize_session()
         file_path = file_path.strip()
 
-        def default(obj):
-            if isinstance(obj, set):
-                return list(obj)
-            return obj
+        # Convert non-serializable objects like set and PosixPath
+        cleaned_data = convert_non_serializable(serialized_data)
 
         with open(file_path, 'w') as file_out:
             json.dump(
-                serialized_data,
+                cleaned_data,
                 file_out,
                 indent=2,
-                separators=(',', ':'),
-                default=default
+                separators=(',', ':')
             )
 
-        # update the current session.
+        # Update the current session
         self._model.session = file_path
-
     def load_session(self, file_path):
         """
         Load node graph session layout file.
@@ -2003,7 +1995,17 @@ class NodeGraph(QtCore.QObject):
             return False
         clipboard = QtWidgets.QApplication.clipboard()
         serial_data = self._serialize(nodes)
+        # Assuming serial_data contains sets
+        for key, value in serial_data.items():
+            if isinstance(value, set):
+                serial_data[key] = list(value)
+
+
+
+        serial_data = convert_sets(serial_data)
         serial_str = json.dumps(serial_data)
+
+
         if serial_str:
             clipboard.setText(serial_str)
             return True
@@ -3062,3 +3064,44 @@ class SubGraph(NodeGraph):
         for n in func_type.get(port.type_(), []):
             if port == n.parent_port:
                 return n
+def convert_sets(obj):
+    if isinstance(obj, set):
+        return list(obj)
+    elif isinstance(obj, dict):
+        return {k: convert_sets(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [convert_sets(i) for i in obj]
+    return obj
+
+def convert_circular_references(obj, seen=None):
+    """
+    Helper function to convert circular references to None or remove them.
+    """
+    if seen is None:
+        seen = []
+    if id(obj) in seen:
+        return None  # Replace the circular reference with None or any placeholder
+    seen.append(id(obj))
+
+    if isinstance(obj, dict):
+        return {k: convert_circular_references(v, seen) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [convert_circular_references(i, seen) for i in obj]
+    elif isinstance(obj, set):
+        return list(convert_circular_references(list(obj), seen))  # Convert sets to lists
+    return obj
+
+def convert_non_serializable(obj):
+    """
+    Helper function to convert non-serializable objects (like PosixPath and set)
+    into serializable formats.
+    """
+    if isinstance(obj, set):
+        return list(obj)  # Convert sets to lists
+    elif isinstance(obj, PosixPath):
+        return str(obj)  # Convert PosixPath to string
+    elif isinstance(obj, dict):
+        return {k: convert_non_serializable(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [convert_non_serializable(i) for i in obj]
+    return obj
