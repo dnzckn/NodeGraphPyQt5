@@ -1,7 +1,9 @@
 #!/usr/bin/python
 from collections import defaultdict
 
-from Qt import QtWidgets, QtCore, QtGui, QtCompat
+from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5 import uic
+from PyQt5.QtCore import pyqtSignal
 
 from .node_property_factory import NodePropertyWidgetFactory
 from .prop_widgets_base import PropLineEdit
@@ -10,22 +12,16 @@ from .prop_widgets_base import PropLineEdit
 class _PropertiesDelegate(QtWidgets.QStyledItemDelegate):
 
     def paint(self, painter, option, index):
-        """
-        Args:
-            painter (QtGui.QPainter):
-            option (QtGui.QStyleOptionViewItem):
-            index (QtCore.QModelIndex):
-        """
         painter.save()
         painter.setRenderHint(QtGui.QPainter.Antialiasing, False)
         painter.setPen(QtCore.Qt.NoPen)
 
-        # draw background.
+        # draw background
         bg_clr = option.palette.base().color()
         painter.setBrush(QtGui.QBrush(bg_clr))
         painter.drawRect(option.rect)
 
-        # draw border.
+        # draw border
         border_width = 1
         if option.state & QtWidgets.QStyle.State_Selected:
             bdr_clr = option.palette.highlight().color()
@@ -35,14 +31,15 @@ class _PropertiesDelegate(QtWidgets.QStyledItemDelegate):
             painter.setPen(QtGui.QPen(bdr_clr, 1))
 
         painter.setBrush(QtCore.Qt.NoBrush)
-        painter.drawRect(QtCore.QRect(
-            option.rect.x() + border_width,
-            option.rect.y() + border_width,
-            option.rect.width() - (border_width * 2),
-            option.rect.height() - (border_width * 2))
+        painter.drawRect(
+            QtCore.QRect(
+                option.rect.x() + border_width,
+                option.rect.y() + border_width,
+                option.rect.width() - (border_width * 2),
+                option.rect.height() - (border_width * 2)
+            )
         )
         painter.restore()
-
 
 class _PropertiesList(QtWidgets.QTableWidget):
 
@@ -54,19 +51,12 @@ class _PropertiesList(QtWidgets.QTableWidget):
         self.verticalHeader().hide()
         self.horizontalHeader().hide()
 
-        QtCompat.QHeaderView.setSectionResizeMode(
-            self.verticalHeader(), QtWidgets.QHeaderView.ResizeToContents
-        )
-        QtCompat.QHeaderView.setSectionResizeMode(
-            self.horizontalHeader(), 0, QtWidgets.QHeaderView.Stretch
-        )
+        # Replacing QtCompat usage
+        self.verticalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
+        self.horizontalHeader().setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
         self.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
 
     def wheelEvent(self, event):
-        """
-        Args:
-            event (QtGui.QWheelEvent):
-        """
         delta = event.angleDelta().y() * 0.2
         self.verticalScrollBar().setValue(
             self.verticalScrollBar().value() - delta
@@ -196,15 +186,6 @@ class _PortConnectionsContainer(QtWidgets.QWidget):
 
     @staticmethod
     def _build_tree_group(title):
-        """
-        Build the ports group box and ports tree widget.
-
-        Args:
-            title (str): group box title.
-
-        Returns:
-            tuple(QtWidgets.QGroupBox, QtWidgets.QTreeWidget): widgets.
-        """
         group_box = QtWidgets.QGroupBox()
         group_box.setMaximumHeight(200)
         group_box.setCheckable(True)
@@ -218,13 +199,14 @@ class _PortConnectionsContainer(QtWidgets.QWidget):
         tree_widget.setHeaderLabels(headers)
         tree_widget.setHeaderHidden(False)
         tree_widget.header().setStretchLastSection(False)
-        QtCompat.QHeaderView.setSectionResizeMode(
-            tree_widget.header(), 2, QtWidgets.QHeaderView.Stretch
-        )
+
+        # Replacing QtCompat usage
+        tree_widget.header().setSectionResizeMode(2, QtWidgets.QHeaderView.Stretch)
 
         group_box.layout().addWidget(tree_widget)
 
         return group_box, tree_widget
+
 
     def _build_row(self, tree, port):
         """
@@ -305,8 +287,8 @@ class NodePropEditorWidget(QtWidgets.QWidget):
     """
 
     #: signal (node_id, prop_name, prop_value)
-    property_changed = QtCore.Signal(str, str, object)
-    property_closed = QtCore.Signal(str)
+    property_changed = pyqtSignal(str, str, object)
+    property_closed = pyqtSignal(str)
 
     def __init__(self, parent=None, node=None):
         super(NodePropEditorWidget, self).__init__(parent)
@@ -622,7 +604,7 @@ class PropertiesBinWidget(QtWidgets.QWidget):
     """
 
     #: Signal emitted (node_id, prop_name, prop_value)
-    property_changed = QtCore.Signal(str, str, object)
+    property_changed = pyqtSignal(str, str, object)
 
     def __init__(self, parent=None, node_graph=None):
         super(PropertiesBinWidget, self).__init__(parent)
@@ -674,24 +656,16 @@ class PropertiesBinWidget(QtWidgets.QWidget):
         )
 
     def __on_port_tree_visible_changed(self, node_id, visible, tree_widget):
-        """
-        Triggered when the visibility of the port tree widget changes we
-        resize the property list table row.
-
-        Args:
-            node_id (str): node id.
-            visible (bool): visibility state.
-            tree_widget (QtWidgets.QTreeWidget): ports tree widget.
-        """
         items = self._prop_list.findItems(node_id, QtCore.Qt.MatchExactly)
         if items:
             tree_widget.setVisible(visible)
             widget = self._prop_list.cellWidget(items[0].row(), 0)
             widget.adjustSize()
-            QtCompat.QHeaderView.setSectionResizeMode(
-                self._prop_list.verticalHeader(),
+            # Replacing QtCompat usage
+            self._prop_list.verticalHeader().setSectionResizeMode(
                 QtWidgets.QHeaderView.ResizeToContents
             )
+
 
     def __on_prop_close(self, node_id):
         """

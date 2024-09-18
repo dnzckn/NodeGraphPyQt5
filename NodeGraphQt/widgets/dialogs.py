@@ -1,6 +1,6 @@
 import os
 
-from Qt import QtWidgets, QtGui, QtCore
+from PyQt5 import QtWidgets, QtGui, QtCore
 
 _current_user_directory = os.path.expanduser('~')
 

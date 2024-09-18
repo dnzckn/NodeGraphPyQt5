@@ -3,7 +3,7 @@
 import signal
 from pathlib import Path
 
-from Qt import QtCore, QtWidgets
+from PyQt5 import QtCore, QtWidgets
 
 from NodeGraphQt import (
     NodeGraph,

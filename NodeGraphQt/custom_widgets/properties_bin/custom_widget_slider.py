@@ -1,5 +1,6 @@
 #!/usr/bin/python
-from Qt import QtWidgets, QtCore
+from PyQt5 import QtWidgets, QtCore
+from PyQt5.QtCore import pyqtSignal
 
 from .prop_widgets_abstract import BaseProperty
 
@@ -83,7 +84,7 @@ class PropSlider(BaseProperty):
 
 
 class QDoubleSlider(QtWidgets.QSlider):
-    double_value_changed = QtCore.Signal(float)
+    double_value_changed = pyqtSignal(float)
 
     def __init__(self, decimals=2, *args, **kargs):
         super(QDoubleSlider, self).__init__(*args, **kargs)

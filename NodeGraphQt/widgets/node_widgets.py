@@ -1,5 +1,6 @@
 #!/usr/bin/python
-from Qt import QtCore, QtWidgets
+from PyQt5 import QtCore, QtWidgets
+from PyQt5.QtCore import pyqtSignal
 
 from NodeGraphQt.constants import ViewerEnum, Z_VAL_NODE_WIDGET
 from NodeGraphQt.errors import NodeWidgetError
@@ -81,7 +82,7 @@ class NodeBaseWidget(QtWidgets.QGraphicsProxyWidget):
         label (str): label text above the embedded widget.
     """
 
-    value_changed = QtCore.Signal(str, object)
+    value_changed = pyqtSignal(str, object)
     """
     Signal triggered when the ``value`` attribute has changed.
     

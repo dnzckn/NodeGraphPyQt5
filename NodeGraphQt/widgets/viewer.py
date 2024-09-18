@@ -3,7 +3,8 @@
 import math
 from distutils.version import LooseVersion
 
-from Qt import QtGui, QtCore, QtWidgets
+from PyQt5 import QtGui, QtCore, QtWidgets
+from PyQt5.QtCore import pyqtSignal
 
 from NodeGraphQt.base.menu import BaseMenu
 from NodeGraphQt.constants import (
@@ -38,20 +39,20 @@ class NodeViewer(QtWidgets.QGraphicsView):
     # node viewer signals.
     # (some of these signals are called by port & node items and connected
     # to the node graph slot functions)
-    moved_nodes = QtCore.Signal(object)
-    search_triggered = QtCore.Signal(str, tuple)
-    connection_sliced = QtCore.Signal(list)
-    connection_changed = QtCore.Signal(list, list)
-    insert_node = QtCore.Signal(object, str, object)
-    node_name_changed = QtCore.Signal(str, str)
-    node_backdrop_updated = QtCore.Signal(str, str, object)
+    moved_nodes = pyqtSignal(object)
+    search_triggered = pyqtSignal(str, tuple)
+    connection_sliced = pyqtSignal(list)
+    connection_changed = pyqtSignal(list, list)
+    insert_node = pyqtSignal(object, str, object)
+    node_name_changed = pyqtSignal(str, str)
+    node_backdrop_updated = pyqtSignal(str, str, object)
 
     # pass through signals that are translated into "NodeGraph()" signals.
-    node_selected = QtCore.Signal(str)
-    node_selection_changed = QtCore.Signal(list, list)
-    node_double_clicked = QtCore.Signal(str)
-    data_dropped = QtCore.Signal(QtCore.QMimeData, object)
-    context_menu_prompt = QtCore.Signal(str, object)
+    node_selected = pyqtSignal(str)
+    node_selection_changed = pyqtSignal(list, list)
+    node_double_clicked = pyqtSignal(str)
+    data_dropped = pyqtSignal(QtCore.QMimeData, object)
+    context_menu_prompt = pyqtSignal(str, object)
 
     def __init__(self, parent=None, undo_stack=None):
         """

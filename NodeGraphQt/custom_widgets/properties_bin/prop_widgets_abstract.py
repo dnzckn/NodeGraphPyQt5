@@ -1,5 +1,6 @@
 #!/usr/bin/python
-from Qt import QtWidgets, QtCore
+from PyQt5 import QtWidgets, QtCore
+from PyQt5.QtCore import pyqtSignal
 
 
 class BaseProperty(QtWidgets.QWidget):
@@ -10,7 +11,7 @@ class BaseProperty(QtWidgets.QWidget):
     Inherits from: :class:`PySide2.QtWidgets.QWidget`
     """
 
-    value_changed = QtCore.Signal(str, object)
+    value_changed = pyqtSignal(str, object)
 
     def __init__(self, parent=None):
         super(BaseProperty, self).__init__(parent)

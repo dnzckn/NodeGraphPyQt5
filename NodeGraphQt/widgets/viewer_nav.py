@@ -1,4 +1,5 @@
-from Qt import QtWidgets, QtCore, QtGui
+from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5.QtCore import pyqtSignal
 
 from NodeGraphQt.constants import NodeEnum, ViewerNavEnum
 
@@ -95,7 +96,7 @@ class NodeNavigationDelagate(QtWidgets.QStyledItemDelegate):
 
 class NodeNavigationWidget(QtWidgets.QListView):
 
-    navigation_changed = QtCore.Signal(str, list)
+    navigation_changed = pyqtSignal(str, list)
 
     def __init__(self, parent=None):
         super(NodeNavigationWidget, self).__init__(parent)

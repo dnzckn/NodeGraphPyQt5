@@ -2,7 +2,8 @@
 import re
 from collections import OrderedDict
 
-from Qt import QtCore, QtWidgets, QtGui
+from PyQt5 import QtCore, QtWidgets, QtGui
+from PyQt5.QtCore import pyqtSignal
 
 from NodeGraphQt.constants import ViewerEnum, ViewerNavEnum
 
@@ -51,7 +52,7 @@ class TabSearchCompleter(QtWidgets.QCompleter):
 
 class TabSearchLineEditWidget(QtWidgets.QLineEdit):
 
-    tab_pressed = QtCore.Signal()
+    tab_pressed = pyqtSignal()
 
     def __init__(self, parent=None):
         super(TabSearchLineEditWidget, self).__init__(parent)
@@ -94,7 +95,7 @@ class TabSearchLineEditWidget(QtWidgets.QLineEdit):
 
 class TabSearchMenuWidget(QtWidgets.QMenu):
 
-    search_submitted = QtCore.Signal(str)
+    search_submitted = pyqtSignal(str)
 
     def __init__(self, node_dict=None):
         super(TabSearchMenuWidget, self).__init__()

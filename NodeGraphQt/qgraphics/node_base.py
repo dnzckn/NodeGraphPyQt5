@@ -1,7 +1,7 @@
 #!/usr/bin/python
 from collections import OrderedDict
 
-from Qt import QtGui, QtCore, QtWidgets
+from PyQt5 import QtGui, QtCore, QtWidgets
 
 from NodeGraphQt.constants import (
     ITEM_CACHE_MODE,
@@ -798,7 +798,7 @@ class NodeItem(AbstractNodeItem):
     def icon(self, path=None):
         self._properties['icon'] = path
         path = path or ICON_NODE_BASE
-        pixmap = QtGui.QPixmap(path)
+        pixmap = QtGui.QPixmap(str(path))
         if pixmap.size().height() > NodeEnum.ICON_SIZE.value:
             pixmap = pixmap.scaledToHeight(
                 NodeEnum.ICON_SIZE.value,

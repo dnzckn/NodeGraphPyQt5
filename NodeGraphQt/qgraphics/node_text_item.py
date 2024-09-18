@@ -1,4 +1,4 @@
-from Qt import QtWidgets, QtCore, QtGui
+from PyQt5 import QtWidgets, QtCore, QtGui
 
 
 class NodeTextItem(QtWidgets.QGraphicsTextItem):

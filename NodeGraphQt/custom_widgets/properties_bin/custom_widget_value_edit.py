@@ -1,16 +1,17 @@
 #!/usr/bin/python
 import re
 
-from Qt import QtWidgets, QtCore, QtGui
+from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5.QtCore import pyqtSignal
 
 _NUMB_REGEX = re.compile(r'^((?:\-)*\d+)*([\.,])*(\d+(?:[eE](?:[\-\+])*\d+)*)*')
 
 
 class _NumberValueMenu(QtWidgets.QMenu):
 
-    mouseMove = QtCore.Signal(object)
-    mouseRelease = QtCore.Signal(object)
-    stepChange = QtCore.Signal()
+    mouseMove = pyqtSignal(object)
+    mouseRelease = pyqtSignal(object)
+    stepChange = pyqtSignal()
 
     def __init__(self, parent=None):
         super(_NumberValueMenu, self).__init__(parent)
@@ -76,7 +77,7 @@ class _NumberValueMenu(QtWidgets.QMenu):
 
 class _NumberValueEdit(QtWidgets.QLineEdit):
 
-    value_changed = QtCore.Signal(object)
+    value_changed = pyqtSignal(object)
 
     def __init__(self, parent=None, data_type=float):
         super(_NumberValueEdit, self).__init__(parent)

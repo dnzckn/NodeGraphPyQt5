@@ -1,5 +1,6 @@
 #!/usr/bin/python
-from Qt import QtWidgets, QtCore
+from PyQt5 import QtWidgets, QtCore
+from PyQt5.QtCore import pyqtSignal
 
 
 class PropLabel(QtWidgets.QLabel):
@@ -7,7 +8,7 @@ class PropLabel(QtWidgets.QLabel):
     Displays a node property as a "QLabel" widget in the PropertiesBin widget.
     """
 
-    value_changed = QtCore.Signal(str, object)
+    value_changed = pyqtSignal(str, object)
 
     def __init__(self, parent=None):
         super(PropLabel, self).__init__(parent)
@@ -38,7 +39,7 @@ class PropLineEdit(QtWidgets.QLineEdit):
     widget.
     """
 
-    value_changed = QtCore.Signal(str, object)
+    value_changed = pyqtSignal(str, object)
 
     def __init__(self, parent=None):
         super(PropLineEdit, self).__init__(parent)
@@ -74,7 +75,7 @@ class PropTextEdit(QtWidgets.QTextEdit):
     widget.
     """
 
-    value_changed = QtCore.Signal(str, object)
+    value_changed = pyqtSignal(str, object)
 
     def __init__(self, parent=None):
         super(PropTextEdit, self).__init__(parent)
@@ -117,7 +118,7 @@ class PropComboBox(QtWidgets.QComboBox):
     widget.
     """
 
-    value_changed = QtCore.Signal(str, object)
+    value_changed = pyqtSignal(str, object)
 
     def __init__(self, parent=None):
         super(PropComboBox, self).__init__(parent)
@@ -173,7 +174,7 @@ class PropCheckBox(QtWidgets.QCheckBox):
     widget.
     """
 
-    value_changed = QtCore.Signal(str, object)
+    value_changed = pyqtSignal(str, object)
 
     def __init__(self, parent=None):
         super(PropCheckBox, self).__init__(parent)
@@ -208,7 +209,7 @@ class PropSpinBox(QtWidgets.QSpinBox):
     Displays a node property as a "QSpinBox" widget in the PropertiesBin widget.
     """
 
-    value_changed = QtCore.Signal(str, object)
+    value_changed = pyqtSignal(str, object)
 
     def __init__(self, parent=None):
         super(PropSpinBox, self).__init__(parent)
@@ -243,7 +244,7 @@ class PropDoubleSpinBox(QtWidgets.QDoubleSpinBox):
     widget.
     """
 
-    value_changed = QtCore.Signal(str, object)
+    value_changed = pyqtSignal(str, object)
 
     def __init__(self, parent=None):
         super(PropDoubleSpinBox, self).__init__(parent)
@@ -278,8 +279,8 @@ class PropDoubleSpinBox(QtWidgets.QDoubleSpinBox):
 #     widget.
 #     """
 #
-#     value_changed = QtCore.Signal(str, object)
-#     button_clicked = QtCore.Signal(str, object)
+#     value_changed = pyqtSignal(str, object)
+#     button_clicked = pyqtSignal(str, object)
 #
 #     def __init__(self, parent=None):
 #         super(PropPushButton, self).__init__(parent)

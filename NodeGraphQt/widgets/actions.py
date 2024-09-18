@@ -1,5 +1,6 @@
 #!/usr/bin/python
-from Qt import QtCore, QtWidgets
+from PyQt5 import QtCore, QtWidgets
+from PyQt5.QtCore import pyqtSignal
 
 from NodeGraphQt.constants import ViewerEnum
 
@@ -81,9 +82,9 @@ class BaseMenu(QtWidgets.QMenu):
         return menus
 
 
-class GraphAction(QtWidgets.QAction):
 
-    executed = QtCore.Signal(object)
+class GraphAction(QtWidgets.QAction):
+    executed = pyqtSignal(object)  # Use pyqtSignal for custom signals
 
     def __init__(self, *args, **kwargs):
         super(GraphAction, self).__init__(*args, **kwargs)
@@ -99,9 +100,10 @@ class GraphAction(QtWidgets.QAction):
                 return action
 
 
+
 class NodeAction(GraphAction):
 
-    executed = QtCore.Signal(object, object)
+    executed = pyqtSignal(object, object)
 
     def __init__(self, *args, **kwargs):
         super(NodeAction, self).__init__(*args, **kwargs)
