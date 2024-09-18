@@ -13,7 +13,10 @@
                 "output_port": "output",
                 "input_port": "inlet"
             }
-        ]
+        ],
+        "metadata": {
+            "root": "root0"
+        }
     },
     "root0_0": {
         "name": "root0_0",
@@ -30,7 +33,10 @@
                 "output_port": "output",
                 "input_port": "inlet"
             }
-        ]
+        ],
+        "metadata": {
+            "root": "root0"
+        }
     },
     "root0_0_0": {
         "name": "root0_0_0",
@@ -41,7 +47,10 @@
                 "output_port": "output"
             }
         ],
-        "outputs": []
+        "outputs": [],
+        "metadata": {
+            "root": "root0"
+        }
     },
     "root0_1": {
         "name": "root0_1",
@@ -63,7 +72,10 @@
                 "output_port": "output",
                 "input_port": "inlet"
             }
-        ]
+        ],
+        "metadata": {
+            "root": "root0"
+        }
     },
     "root0_1_0": {
         "name": "root0_1_0",
@@ -80,7 +92,10 @@
                 "output_port": "output",
                 "input_port": "inlet"
             }
-        ]
+        ],
+        "metadata": {
+            "root": "root0"
+        }
     },
     "root0_1_0_0": {
         "name": "root0_1_0_0",
@@ -91,7 +106,10 @@
                 "output_port": "output"
             }
         ],
-        "outputs": []
+        "outputs": [],
+        "metadata": {
+            "root": "root0"
+        }
     },
     "root0_1_1": {
         "name": "root0_1_1",
@@ -102,6 +120,9 @@
                 "output_port": "output"
             }
         ],
-        "outputs": []
+        "outputs": [],
+        "metadata": {
+            "root": "root0"
+        }
     }
 }
