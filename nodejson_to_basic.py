@@ -1,10 +1,10 @@
 import json
 import networkx as nx
 
-def build_simple_hierarchy_with_networkx(nodes, connections):
+def gui_to_graph(nodes, connections):
     """
-    Build a simplified structure showing direct connections (N+1 neighbors)
-    using NetworkX for efficient graph traversal and metadata assignment.
+    Converts the NodeGraphQt saved json into a simplified graph network
+    structure showing direct connections (N+1 neighbors)
 
     Args:
         nodes (dict): Dictionary of nodes with their attributes.
@@ -100,7 +100,7 @@ def convert_json_structure(json_data):
     connections = json_data['connections']
 
     # Build the simplified structure using NetworkX.
-    return build_simple_hierarchy_with_networkx(nodes, connections)
+    return gui_to_graph(nodes, connections)
 
 def save_hierarchy_to_json(hierarchy, file_path):
     """
