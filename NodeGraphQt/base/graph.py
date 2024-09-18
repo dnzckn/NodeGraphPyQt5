@@ -1929,6 +1929,7 @@ class NodeGraph(QtCore.QObject):
 
         # Update the current session
         self._model.session = file_path
+        
     def load_session(self, file_path):
         """
         Load node graph session layout file.
@@ -1945,8 +1946,17 @@ class NodeGraph(QtCore.QObject):
         if not os.path.isfile(file_path):
             raise IOError('file does not exist: {}'.format(file_path))
 
+        # Clear the current graph before loading
         self.clear_session()
+
+        # Load the session from the file
         self.import_session(file_path, clear_undo_stack=True)
+
+        # Ensure the loaded nodes are visible
+        self.clear_selection()   # Clears any selected nodes (optional)
+        self.fit_to_selection()  # Adjusts the zoom to fit all nodes
+
+        
 
     def import_session(self, file_path, clear_undo_stack=True):
         """
