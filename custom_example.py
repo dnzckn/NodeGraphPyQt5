@@ -15,15 +15,15 @@ class CustomPortNode(BaseNode):
 
     def __init__(self):
         super(CustomPortNode, self).__init__()
-        self.add_input('trace', color=(255, 0, 0), display_name=True)  # Unused inlet
-        self.add_input('inlet', color=(0, 0, 255), display_name=True)  # Connected inlet
-        self.add_output('output', color=(0, 255, 0), display_name=True)  # Output connection
+        self.add_input('trace', color=(255, 0, 0), display_name=True)
+        self.add_input('inlet', color=(0, 0, 255), display_name=True)
+        self.add_output('output', color=(0, 255, 0), display_name=True)
 
 
 # Recursive function to create nodes dynamically
 def create_descendants(graph, parent_node, name_prefix, depth, max_depth, child_counts, pos, spacing):
     """
-    Recursively create children for the given parent node.
+    Helper function to recursively create children for the given parent node.
 
     Args:
         graph (NodeGraph): The graph to add nodes to.
@@ -75,28 +75,22 @@ def build_graph():
 
     # Define the number of children for each node in the hierarchy
     child_counts = {
-        'root0': 2,         # Root has 2 children
-        'root0_0': 1,       # First child of root has 1 child
-        'root0_1': 2,       # Second child of root has 2 children
-        'root0_1_0': 1,     # First child of root0_1 has 1 child
-        # Add more entries here for further levels if needed
+        'root0': 2,         
+        'root0_0': 1,       
+        'root0_1': 2,       
+        'root0_1_0': 1,     
     }
 
     # Create descendants from the root
     create_descendants(graph, root_node, 'root0', 0, 4, child_counts, [0, 0], 200)
 
-    # Automatically layout nodes for better visualization.
     graph.auto_layout_nodes()
-
-    # Set the zoom to fit all nodes.
     graph.clear_selection()
     graph.fit_to_selection()
 
-    # Enable hotkey support.
     hotkey_path = Path(BASE_PATH, 'hotkeys', 'hotkeys.json')
     graph.set_context_menu_from_file(hotkey_path, 'graph')
 
-    # Show the graph widget.
     graph_widget = graph.widget
     graph_widget.resize(1100, 800)
     graph_widget.show()
