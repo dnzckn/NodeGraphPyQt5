@@ -1,10 +1,32 @@
 import json
 import networkx as nx
 
+def parse_node_name(node_name):
+    """
+    Parse the node name to extract root and branch information.
+
+    Args:
+        node_name (str): The name of the node.
+
+    Returns:
+        dict: A dictionary with keys 'root', 'branch', and 'name'.
+    """
+    parts = node_name.split('_')
+    root = parts[0]
+    branch = None
+
+    # If there is at least one underscore after the root, use the first index as the branch
+    if len(parts) > 1:
+        branch = parts[1]  # This is the branch number
+
+    return {'root': root, 'branch': branch, 'name': node_name}
+
+
 def gui_to_graph(nodes, connections):
     """
-    Converts the NodeGraphQt saved json into a simplified graph network
+    Converts the NodeGraphQt saved JSON into a simplified graph network
     structure showing direct connections (N+1 neighbors)
+    using NetworkX for efficient graph traversal and metadata assignment.
 
     Args:
         nodes (dict): Dictionary of nodes with their attributes.
@@ -22,7 +44,12 @@ def gui_to_graph(nodes, connections):
     # Add nodes to the graph with initial metadata.
     for node_id, node_data in nodes.items():
         node_name = node_data['name']
-        G.add_node(node_name, metadata={'root': None})
+        parsed_name = parse_node_name(node_name)
+        metadata = {
+            'root': parsed_name['root'],
+            'branch': parsed_name['branch']
+        }
+        G.add_node(node_name, metadata=metadata)
 
     # Add edges to the graph based on connections.
     for conn in connections:
@@ -39,16 +66,6 @@ def gui_to_graph(nodes, connections):
             output_port=output_port,
             input_port=input_port
         )
-
-    # Identify root nodes (nodes with no incoming edges).
-    root_nodes = [node for node, degree in G.in_degree() if degree == 0]
-
-    # Assign root metadata using BFS traversal.
-    for root_name in root_nodes:
-        # BFS traversal from the root node.
-        for node in nx.bfs_tree(G, source=root_name):
-            # Assign the root metadata.
-            G.nodes[node]['metadata']['root'] = root_name
 
     # Build the simplified hierarchy.
     simple_hierarchy = {}
