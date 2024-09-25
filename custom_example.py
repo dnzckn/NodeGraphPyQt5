@@ -1,21 +1,110 @@
 import signal
 from PyQt5 import QtCore, QtWidgets
+from PyQt5.QtWidgets import QGraphicsItem
 from pathlib import Path
 from NodeGraphQt import BaseNode, NodeGraph, BackdropNode
 from NodeGraphQt.constants import PipeLayoutEnum  
+
+# from NodeGraphQt.qgraphics import node_backdrop 
 BASE_PATH = Path(__file__).parent.resolve()
 
 
+from PyQt5.QtWidgets import QGraphicsItem
+from NodeGraphQt import BaseNode
+
+from NodeGraphQt import BackdropNode, BaseNode
+
 class CustomBackdropNode(BackdropNode):
     """
-    A custom node with four inputs and four outputs.
+    A custom backdrop node that serializes the IDs of the nodes it contains.
     """
 
     __identifier__ = 'custom.ports'
-    NODE_NAME = 'Custom Port Node'
+    NODE_NAME = 'Custom Backdrop Node'
 
     def __init__(self):
         super(CustomBackdropNode, self).__init__()
+        # Initialize properties to store contained node IDs and nodes
+        self._contained_node_ids = []
+        self._contained_nodes = []
+        # Create a custom property 'contained_node_ids' in the node model
+        self.create_property('contained_node_ids', self._contained_node_ids)
+
+    def get_nodes(self, inc_intersects=False):
+        """
+        Returns the list of nodes within the backdrop.
+
+        Args:
+            inc_intersects (bool): If True, includes nodes that intersect with the backdrop.
+
+        Returns:
+            list[NodeObject]: list of nodes within the backdrop.
+        """
+        # Access the get_nodes method from the BackdropNodeItem via self.view
+        node_items = self.view.get_nodes(inc_intersects)
+        # Convert the node items to node objects
+        nodes = [self.graph.get_node_by_id(item.id) for item in node_items]
+        return nodes
+
+    def update_contained_nodes(self):
+        """
+        Updates the list of nodes contained within the backdrop.
+        """
+        nodes = self.get_nodes()  # Use the newly defined get_nodes method
+        self._contained_nodes = nodes
+        self._contained_node_ids = [node.id for node in nodes if node]
+        # Update the property in the model
+        self.set_property('contained_node_ids', self._contained_node_ids)
+
+    def update_model(self):
+        """
+        Update the node model from view.
+        """
+        # Update contained nodes before updating the model
+        self.update_contained_nodes()
+        super(CustomBackdropNode, self).update_model()
+
+    def to_dict(self):
+        """
+        Serialize the backdrop node to a dictionary, including contained node IDs.
+
+        Returns:
+            dict: Serialized node data.
+        """
+        node_dict = super(CustomBackdropNode, self).to_dict()
+        # Include the contained node IDs under the 'custom' field
+        if 'custom' not in node_dict:
+            node_dict['custom'] = {}
+        node_dict['custom']['contained_node_ids'] = self.get_property('contained_node_ids')
+        return node_dict
+
+    def from_dict(self, node_dict):
+        """
+        Deserialize the backdrop node from a dictionary.
+
+        Args:
+            node_dict (dict): Serialized node data.
+        """
+        super(CustomBackdropNode, self).from_dict(node_dict)
+        # Retrieve the contained node IDs from the 'custom' field
+        self._contained_node_ids = node_dict.get('custom', {}).get('contained_node_ids', [])
+        self._contained_nodes = []
+
+    def restore_contained_nodes(self, graph):
+        """
+        After loading the session, restore the contained nodes based on IDs.
+
+        Args:
+            graph (NodeGraph): The node graph.
+        """
+        self.graph = graph  # Store a reference to the graph
+        for node_id in self._contained_node_ids:
+            node = graph.get_node_by_id(node_id)
+            if node and node not in self._contained_nodes:
+                self._contained_nodes.append(node)
+
+
+
 
 
 class CustomPortNode(BaseNode):
