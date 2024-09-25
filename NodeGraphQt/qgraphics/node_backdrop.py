@@ -101,24 +101,53 @@ class BackdropSizer(QtWidgets.QGraphicsItem):
         painter.restore()
 
 
+
+class NameItemFocusProxy(QtCore.QObject):
+    def __init__(self, parent):
+        super(NameItemFocusProxy, self).__init__()
+        self.parent = parent
+
+    def eventFilter(self, obj, event):
+        if event.type() == QtCore.QEvent.FocusOut:
+            # Editing finished
+            self.parent._name_item.setTextInteractionFlags(QtCore.Qt.NoTextInteraction)
+            new_name = self.parent._name_item.toPlainText()
+            self.parent.name = new_name  # Update the name via property
+            # Update the node's name in the model
+            if self.parent.node:
+                self.parent.node.name = new_name
+            # Update the GUI
+            self.parent.update()
+        return False
+
+
 class BackdropNodeItem(AbstractNodeItem):
-    """
-    Base Backdrop item.
-
-    Args:
-        name (str): name displayed on the node.
-        text (str): backdrop text.
-        parent (QtWidgets.QGraphicsItem): parent item.
-    """
-
-    def __init__(self, name='backdrop', text='', parent=None):
+    def __init__(self, name='Backdrop', text='', parent=None):
         super(BackdropNodeItem, self).__init__(name, parent)
+        self.node = None  # Initialize the node attribute
         self.setZValue(Z_VAL_BACKDROP)
         self._properties['backdrop_text'] = text
         self._min_size = 80, 80
         self._sizer = BackdropSizer(self, 26.0)
         self._sizer.set_pos(*self._min_size)
         self._nodes = [self]
+
+        # Create a QGraphicsTextItem for the name
+        self._name_item = QtWidgets.QGraphicsTextItem(self.name, self)
+        self._name_item.setDefaultTextColor(QtGui.QColor(*self.text_color))
+        self._name_item.setTextInteractionFlags(QtCore.Qt.NoTextInteraction)
+        self._name_item.setPos(0, 0)  # Position at the top-left corner
+        self._name_item.setTextWidth(self.boundingRect().width())
+        self._name_item.document().setDefaultTextOption(
+            QtGui.QTextOption(QtCore.Qt.AlignCenter)
+        )
+
+        # Install event filter to detect when editing is finished
+        self._name_item_focus_proxy = NameItemFocusProxy(self)
+        self._name_item.installEventFilter(self._name_item_focus_proxy)
+
+    def set_node(self, node):
+        self.node = node
 
     def _combined_rect(self, nodes):
         group = self.scene().createItemGroup(nodes)
@@ -127,28 +156,36 @@ class BackdropNodeItem(AbstractNodeItem):
         return rect
 
     def mouseDoubleClickEvent(self, event):
-        viewer = self.viewer()
-        if viewer:
-            viewer.node_double_clicked.emit(self.id)
-        super(BackdropNodeItem, self).mouseDoubleClickEvent(event)
+        if self._name_item.contains(event.pos() - self._name_item.pos()):
+            # Enable text interaction
+            self._name_item.setTextInteractionFlags(QtCore.Qt.TextEditorInteraction)
+            self._name_item.setFocus()
+            # Select all text
+            cursor = self._name_item.textCursor()
+            cursor.select(QtGui.QTextCursor.Document)
+            self._name_item.setTextCursor(cursor)
+        else:
+            super(BackdropNodeItem, self).mouseDoubleClickEvent(event)
 
     def mousePressEvent(self, event):
         if event.button() == QtCore.Qt.LeftButton:
             pos = event.scenePos()
             rect = QtCore.QRectF(pos.x() - 5, pos.y() - 5, 10, 10)
-            item = self.scene().items(rect)[0]
+            items = self.scene().items(rect)
+            if items:
+                item = items[0]
+                if isinstance(item, (PortItem, PipeItem)):
+                    self.setFlag(self.ItemIsMovable, False)
+                    return
+                if self.selected:
+                    return
 
-            if isinstance(item, (PortItem, PipeItem)):
-                self.setFlag(self.ItemIsMovable, False)
-                return
-            if self.selected:
-                return
+                viewer = self.viewer()
+                [n.setSelected(False) for n in viewer.selected_nodes()]
 
-            viewer = self.viewer()
-            [n.setSelected(False) for n in viewer.selected_nodes()]
-
-            self._nodes += self.get_nodes(False)
-            [n.setSelected(True) for n in self._nodes]
+                self._nodes += self.get_nodes(False)
+                [n.setSelected(True) for n in self._nodes]
+        super(BackdropNodeItem, self).mousePressEvent(event)
 
     def mouseReleaseEvent(self, event):
         super(BackdropNodeItem, self).mouseReleaseEvent(event)
@@ -173,6 +210,17 @@ class BackdropNodeItem(AbstractNodeItem):
         self.viewer().node_backdrop_updated.emit(
             self.id, 'sizer_double_clicked', size)
 
+    @AbstractNodeItem.width.setter
+    def width(self, width=0.0):
+        AbstractNodeItem.width.fset(self, width)
+        self._sizer.set_pos(self._width, self._height)
+        self._name_item.setTextWidth(self.boundingRect().width())
+
+    @AbstractNodeItem.height.setter
+    def height(self, height=0.0):
+        AbstractNodeItem.height.fset(self, height)
+        self._sizer.set_pos(self._width, self._height)
+
     def paint(self, painter, option, widget):
         """
         Draws the backdrop rect.
@@ -189,10 +237,12 @@ class BackdropNodeItem(AbstractNodeItem):
 
         margin = 1.0
         rect = self.boundingRect()
-        rect = QtCore.QRectF(rect.left() + margin,
-                             rect.top() + margin,
-                             rect.width() - (margin * 2),
-                             rect.height() - (margin * 2))
+        rect = QtCore.QRectF(
+            rect.left() + margin,
+            rect.top() + margin,
+            rect.width() - (margin * 2),
+            rect.height() - (margin * 2)
+        )
 
         radius = 2.6
         color = (self.color[0], self.color[1], self.color[2], 50)
@@ -206,17 +256,22 @@ class BackdropNodeItem(AbstractNodeItem):
         painter.drawRoundedRect(top_rect, radius, radius)
         for pos in [top_rect.left(), top_rect.right() - 5.0]:
             painter.drawRect(
-                QtCore.QRectF(pos, top_rect.bottom() - 5.0, 5.0, 5.0))
+                QtCore.QRectF(pos, top_rect.bottom() - 5.0, 5.0, 5.0)
+            )
 
         if self.backdrop_text:
             painter.setPen(QtGui.QColor(*self.text_color))
             txt_rect = QtCore.QRectF(
-                top_rect.x() + 5.0, top_rect.height() + 3.0,
-                rect.width() - 5.0, rect.height())
-            painter.setPen(QtGui.QColor(*self.text_color))
-            painter.drawText(txt_rect,
-                             QtCore.Qt.AlignLeft | QtCore.Qt.TextWordWrap,
-                             self.backdrop_text)
+                top_rect.x() + 5.0,
+                top_rect.height() + 3.0,
+                rect.width() - 5.0,
+                rect.height()
+            )
+            painter.drawText(
+                txt_rect,
+                QtCore.Qt.AlignLeft | QtCore.Qt.TextWordWrap,
+                self.backdrop_text
+            )
 
         if self.selected:
             sel_color = [x for x in NodeEnum.SELECTED_COLOR.value]
@@ -224,11 +279,6 @@ class BackdropNodeItem(AbstractNodeItem):
             painter.setBrush(QtGui.QColor(*sel_color))
             painter.setPen(QtCore.Qt.NoPen)
             painter.drawRoundedRect(rect, radius, radius)
-
-        txt_rect = QtCore.QRectF(top_rect.x(), top_rect.y(),
-                                 rect.width(), top_rect.height())
-        painter.setPen(QtGui.QColor(*self.text_color))
-        painter.drawText(txt_rect, QtCore.Qt.AlignCenter, self.name)
 
         border = 0.8
         border_color = self.color
@@ -293,19 +343,10 @@ class BackdropNodeItem(AbstractNodeItem):
         self._properties['backdrop_text'] = text
         self.update(self.boundingRect())
 
-    @AbstractNodeItem.width.setter
-    def width(self, width=0.0):
-        AbstractNodeItem.width.fset(self, width)
-        self._sizer.set_pos(self._width, self._height)
-
-    @AbstractNodeItem.height.setter
-    def height(self, height=0.0):
-        AbstractNodeItem.height.fset(self, height)
-        self._sizer.set_pos(self._width, self._height)
-
     def from_dict(self, node_dict):
         super().from_dict(node_dict)
         custom_props = node_dict.get('custom') or {}
         for prop_name, value in custom_props.items():
             if prop_name == 'backdrop_text':
                 self.backdrop_text = value
+        self._name_item.setPlainText(self.name)

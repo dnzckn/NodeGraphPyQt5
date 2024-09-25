@@ -1,9 +1,22 @@
 import signal
 from PyQt5 import QtCore, QtWidgets
 from pathlib import Path
-from NodeGraphQt import BaseNode, NodeGraph
+from NodeGraphQt import BaseNode, NodeGraph, BackdropNode
 from NodeGraphQt.constants import PipeLayoutEnum  
 BASE_PATH = Path(__file__).parent.resolve()
+
+
+class CustomBackdropNode(BackdropNode):
+    """
+    A custom node with four inputs and four outputs.
+    """
+
+    __identifier__ = 'custom.ports'
+    NODE_NAME = 'Custom Port Node'
+
+    def __init__(self):
+        super(CustomBackdropNode, self).__init__()
+
 
 class CustomPortNode(BaseNode):
     """
@@ -16,13 +29,13 @@ class CustomPortNode(BaseNode):
     def __init__(self):
         super(CustomPortNode, self).__init__()
         
-        for i in range(2):
-            self.add_input(f'trace{i}', color=(255, 0, 0), display_name=True)
+
         for i in range(3):
             self.add_input(f'input{i}', color=(0, 0, 255), display_name=True)
         for i in range(4):
             self.add_output(f'output{i}', color=(0, 255, 0), display_name=True)
-
+        for i in range(2):
+            self.add_input(f'trace{i}', color=(255, 0, 0), display_name=True)
 
 # Recursive function to create nodes dynamically
 def create_descendants(graph, parent_node, name_prefix, depth, max_depth, child_counts, pos, spacing, branch_num):
@@ -83,9 +96,11 @@ def build_graph():
 
     # Register the custom node.
     graph.register_node(CustomPortNode)
-
+    graph.register_node(CustomBackdropNode)
     # Create root node at the top center.
     root_node = graph.create_node('custom.ports.CustomPortNode', name='root0')
+    bd_node = graph.create_node('custom.ports.CustomBackdropNode', name='test')
+
     root_node.set_pos(0, 0)
 
     # Define the number of children for each node in the hierarchy
