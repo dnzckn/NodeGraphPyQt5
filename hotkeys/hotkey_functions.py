@@ -287,11 +287,6 @@ def toggle_node_search(graph):
     """
     graph.toggle_node_search()
 
-
-#!/usr/bin/python
-
-# Existing imports and functions...
-
 def search_nodes(graph):
     """
     Opens a search dialog to find nodes by name.
