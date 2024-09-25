@@ -7,118 +7,6 @@ from NodeGraphQt.qgraphics.pipe import PipeItem
 from NodeGraphQt.qgraphics.port import PortItem
 
 
-class BackdropSizer(QtWidgets.QGraphicsItem):
-    """
-    Sizer item for resizing a backdrop item.
-
-    Args:
-        parent (BackdropNodeItem): the parent node item.
-        size (float): sizer size.
-    """
-
-    def __init__(self, parent=None, size=6.0):
-        super(BackdropSizer, self).__init__(parent)
-        self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable, True)
-        self.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable, True)
-        self.setFlag(QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges, True)
-        self.setCursor(QtGui.QCursor(QtCore.Qt.SizeFDiagCursor))
-        self.setToolTip('double-click auto resize')
-        self._size = size
-
-    @property
-    def size(self):
-        return self._size
-
-    def set_pos(self, x, y):
-        x -= self._size
-        y -= self._size
-        self.setPos(x, y)
-
-    def boundingRect(self):
-        return QtCore.QRectF(0.5, 0.5, self._size, self._size)
-
-    def itemChange(self, change, value):
-        if change == QtWidgets.QGraphicsItem.ItemPositionChange:
-            item = self.parentItem()
-            mx, my = item.minimum_size
-            x = mx if value.x() < mx else value.x()
-            y = my if value.y() < my else value.y()
-            value = QtCore.QPointF(x, y)
-            item.on_sizer_pos_changed(value)
-            return value
-        return super(BackdropSizer, self).itemChange(change, value)
-
-    def mouseDoubleClickEvent(self, event):
-        item = self.parentItem()
-        item.on_sizer_double_clicked()
-        super(BackdropSizer, self).mouseDoubleClickEvent(event)
-
-    def mousePressEvent(self, event):
-        self.__prev_xy = (self.pos().x(), self.pos().y())
-        super(BackdropSizer, self).mousePressEvent(event)
-
-    def mouseReleaseEvent(self, event):
-        current_xy = (self.pos().x(), self.pos().y())
-        if current_xy != self.__prev_xy:
-            item = self.parentItem()
-            item.on_sizer_pos_mouse_release()
-        del self.__prev_xy
-        super(BackdropSizer, self).mouseReleaseEvent(event)
-
-    def paint(self, painter, option, widget):
-        """
-        Draws the backdrop sizer in the bottom right corner.
-
-        Args:
-            painter (QtGui.QPainter): painter used for drawing the item.
-            option (QtGui.QStyleOptionGraphicsItem):
-                used to describe the parameters needed to draw.
-            widget (QtWidgets.QWidget): not used.
-        """
-        painter.save()
-
-        margin = 1.0
-        rect = self.boundingRect()
-        rect = QtCore.QRectF(rect.left() + margin,
-                             rect.top() + margin,
-                             rect.width() - (margin * 2),
-                             rect.height() - (margin * 2))
-
-        item = self.parentItem()
-        if item and item.selected:
-            color = QtGui.QColor(*NodeEnum.SELECTED_BORDER_COLOR.value)
-        else:
-            color = QtGui.QColor(*item.color)
-            color = color.darker(110)
-        path = QtGui.QPainterPath()
-        path.moveTo(rect.topRight())
-        path.lineTo(rect.bottomRight())
-        path.lineTo(rect.bottomLeft())
-        painter.setBrush(color)
-        painter.setPen(QtCore.Qt.NoPen)
-        painter.fillPath(path, painter.brush())
-
-        painter.restore()
-
-
-
-class NameItemFocusProxy(QtCore.QObject):
-    def __init__(self, parent):
-        super(NameItemFocusProxy, self).__init__()
-        self.parent = parent
-
-    def eventFilter(self, obj, event):
-        if event.type() == QtCore.QEvent.FocusOut:
-            # Editing finished
-            self.parent._name_item.setTextInteractionFlags(QtCore.Qt.NoTextInteraction)
-            new_name = self.parent._name_item.toPlainText()
-            self.parent.name = new_name  # Update the name via property
-            # Update the node's name in the model
-            if self.parent.node:
-                self.parent.node.name = new_name
-            # Update the GUI
-            self.parent.update()
-        return False
 
 
 class BackdropNodeItem(AbstractNodeItem):
@@ -350,3 +238,117 @@ class BackdropNodeItem(AbstractNodeItem):
             if prop_name == 'backdrop_text':
                 self.backdrop_text = value
         self._name_item.setPlainText(self.name)
+
+class NameItemFocusProxy(QtCore.QObject):
+    def __init__(self, parent):
+        super(NameItemFocusProxy, self).__init__()
+        self.parent = parent
+
+    def eventFilter(self, obj, event):
+        if event.type() == QtCore.QEvent.FocusOut:
+            # Editing finished
+            self.parent._name_item.setTextInteractionFlags(QtCore.Qt.NoTextInteraction)
+            new_name = self.parent._name_item.toPlainText()
+            self.parent.name = new_name  # Update the name via property
+            # Update the node's name in the model
+            if self.parent.node:
+                self.parent.node.name = new_name
+            # Update the GUI
+            self.parent.update()
+        return False
+
+class BackdropSizer(QtWidgets.QGraphicsItem):
+    """
+    Sizer item for resizing a backdrop item.
+
+    Args:
+        parent (BackdropNodeItem): the parent node item.
+        size (float): sizer size.
+    """
+
+    def __init__(self, parent=None, size=6.0):
+        super(BackdropSizer, self).__init__(parent)
+        self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable, True)
+        self.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable, True)
+        self.setFlag(QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges, True)
+        self.setCursor(QtGui.QCursor(QtCore.Qt.SizeFDiagCursor))
+        self.setToolTip('double-click auto resize')
+        self._size = size
+
+    @property
+    def size(self):
+        return self._size
+
+    def set_pos(self, x, y):
+        x -= self._size
+        y -= self._size
+        self.setPos(x, y)
+
+    def boundingRect(self):
+        return QtCore.QRectF(0.5, 0.5, self._size, self._size)
+
+    def itemChange(self, change, value):
+        if change == QtWidgets.QGraphicsItem.ItemPositionChange:
+            item = self.parentItem()
+            mx, my = item.minimum_size
+            x = mx if value.x() < mx else value.x()
+            y = my if value.y() < my else value.y()
+            value = QtCore.QPointF(x, y)
+            item.on_sizer_pos_changed(value)
+            return value
+        return super(BackdropSizer, self).itemChange(change, value)
+
+    def mouseDoubleClickEvent(self, event):
+        item = self.parentItem()
+        item.on_sizer_double_clicked()
+        super(BackdropSizer, self).mouseDoubleClickEvent(event)
+
+    def mousePressEvent(self, event):
+        self.__prev_xy = (self.pos().x(), self.pos().y())
+        super(BackdropSizer, self).mousePressEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        current_xy = (self.pos().x(), self.pos().y())
+        if current_xy != self.__prev_xy:
+            item = self.parentItem()
+            item.on_sizer_pos_mouse_release()
+        del self.__prev_xy
+        super(BackdropSizer, self).mouseReleaseEvent(event)
+
+    def paint(self, painter, option, widget):
+        """
+        Draws the backdrop sizer in the bottom right corner.
+
+        Args:
+            painter (QtGui.QPainter): painter used for drawing the item.
+            option (QtGui.QStyleOptionGraphicsItem):
+                used to describe the parameters needed to draw.
+            widget (QtWidgets.QWidget): not used.
+        """
+        painter.save()
+
+        margin = 1.0
+        rect = self.boundingRect()
+        rect = QtCore.QRectF(rect.left() + margin,
+                             rect.top() + margin,
+                             rect.width() - (margin * 2),
+                             rect.height() - (margin * 2))
+
+        item = self.parentItem()
+        if item and item.selected:
+            color = QtGui.QColor(*NodeEnum.SELECTED_BORDER_COLOR.value)
+        else:
+            color = QtGui.QColor(*item.color)
+            color = color.darker(110)
+        path = QtGui.QPainterPath()
+        path.moveTo(rect.topRight())
+        path.lineTo(rect.bottomRight())
+        path.lineTo(rect.bottomLeft())
+        painter.setBrush(color)
+        painter.setPen(QtCore.Qt.NoPen)
+        painter.fillPath(path, painter.brush())
+
+        painter.restore()
+
+
+
