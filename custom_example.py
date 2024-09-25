@@ -20,7 +20,7 @@ class CustomBackdropNode(BackdropNode):
 
 class CustomPortNode(BaseNode):
     """
-    A custom node with four inputs and four outputs.
+    A custom node with dynamic inputs and outputs.
     """
 
     __identifier__ = 'custom.ports'
@@ -28,14 +28,55 @@ class CustomPortNode(BaseNode):
 
     def __init__(self):
         super(CustomPortNode, self).__init__()
-        
 
+        # Allow port deletion
+        self.set_port_deletion_allowed(True)
+
+        # Initialize with default inputs and outputs
         for i in range(3):
             self.add_input(f'input{i}', color=(0, 0, 255), display_name=True)
         for i in range(4):
             self.add_output(f'output{i}', color=(0, 255, 0), display_name=True)
         for i in range(2):
             self.add_input(f'trace{i}', color=(255, 0, 0), display_name=True)
+
+    def add_input_port(self, name=None):
+        """
+        Adds an input port to the node.
+
+        Args:
+            name (str): Optional. Name of the port.
+        """
+        if not name:
+            name = f'input{len(self.input_ports())}'
+        self.add_input(name, color=(0, 0, 255), display_name=True)
+
+    def add_output_port(self, name=None):
+        """
+        Adds an output port to the node.
+
+        Args:
+            name (str): Optional. Name of the port.
+        """
+        if not name:
+            name = f'output{len(self.output_ports())}'
+        self.add_output(name, color=(0, 255, 0), display_name=True)
+
+    def remove_port_by_name(self, port_name):
+        """
+        Removes a port from the node.
+
+        Args:
+            port_name (str): Name of the port to remove.
+        """
+        if port_name in self.inputs():
+            self.delete_input(port_name)
+        elif port_name in self.outputs():
+            self.delete_output(port_name)
+        else:
+            print(f'Port "{port_name}" not found in node "{self.name()}".')
+
+
 
 # Recursive function to create nodes dynamically
 def create_descendants(graph, parent_node, name_prefix, depth, max_depth, child_counts, pos, spacing, branch_num):
