@@ -4,7 +4,6 @@
 # menu command functions
 # ------------------------------------------------------------------------------
 
-
 def zoom_in(graph):
     """
     Set the node graph to zoom in by 0.1
@@ -15,7 +14,7 @@ def zoom_in(graph):
 
 def zoom_out(graph):
     """
-    Set the node graph to zoom in by 0.1
+    Set the node graph to zoom out by 0.2
     """
     zoom = graph.get_zoom() - 0.2
     graph.set_zoom(zoom)
@@ -54,7 +53,7 @@ def open_session(graph):
 
 def import_session(graph):
     """
-    Prompts a file open dialog to load a session.
+    Prompts a file open dialog to import a session.
     """
     current = graph.current_session()
     file_path = graph.load_dialog(current)
@@ -88,21 +87,23 @@ def save_session_as(graph):
 
 def clear_session(graph):
     """
-    Prompts a warning dialog to new a node graph session.
+    Prompts a warning dialog to clear the current node graph session.
     """
     if graph.question_dialog('Clear Current Session?', 'Clear Session'):
         graph.clear_session()
+
 
 def quit_qt(graph):
     """
     Quit the Qt application.
     """
-    from Qt import QtCore
+    from PyQt5 import QtCore
     QtCore.QCoreApplication.quit()
+
 
 def clear_undo(graph):
     """
-    Prompts a warning dialog to clear undo.
+    Prompts a warning dialog to clear the undo stack.
     """
     viewer = graph.viewer()
     msg = 'Clear all undo history, Are you sure?'
@@ -112,42 +113,42 @@ def clear_undo(graph):
 
 def copy_nodes(graph):
     """
-    Copy nodes to the clipboard.
+    Copy selected nodes to the clipboard.
     """
     graph.copy_nodes()
 
 
 def cut_nodes(graph):
     """
-    Cut nodes to the clip board.
+    Cut selected nodes to the clipboard.
     """
     graph.cut_nodes()
 
 
 def paste_nodes(graph):
     """
-    Pastes nodes copied from the clipboard.
+    Paste nodes from the clipboard.
     """
     graph.paste_nodes()
 
 
 def delete_nodes(graph):
     """
-    Delete selected node.
+    Delete selected nodes.
     """
     graph.delete_nodes(graph.selected_nodes())
 
 
 def extract_nodes(graph):
     """
-    Extract selected nodes.
+    Extract selected nodes from a group.
     """
     graph.extract_nodes(graph.selected_nodes())
 
 
 def clear_node_connections(graph):
     """
-    Clear port connection on selected nodes.
+    Clear port connections on selected nodes.
     """
     graph.undo_stack().beginMacro('clear selected node connections')
     for node in graph.selected_nodes():
@@ -158,7 +159,7 @@ def clear_node_connections(graph):
 
 def select_all_nodes(graph):
     """
-    Select all nodes.
+    Select all nodes in the graph.
     """
     graph.select_all()
 
@@ -172,7 +173,7 @@ def clear_node_selection(graph):
 
 def invert_node_selection(graph):
     """
-    Invert node selection.
+    Invert the current node selection.
     """
     graph.invert_selection()
 
@@ -186,7 +187,7 @@ def disable_nodes(graph):
 
 def duplicate_nodes(graph):
     """
-    Duplicated selected nodes.
+    Duplicate selected nodes.
     """
     graph.duplicate_nodes(graph.selected_nodes())
 
@@ -242,7 +243,7 @@ def angle_pipe(graph):
 
 def bg_grid_none(graph):
     """
-    Turn off the background patterns.
+    Turn off the background grid patterns.
     """
     from NodeGraphQt.constants import ViewerEnum
     graph.set_grid_mode(ViewerEnum.GRID_DISPLAY_NONE.value)
@@ -250,7 +251,7 @@ def bg_grid_none(graph):
 
 def bg_grid_dots(graph):
     """
-    Set background node graph background with grid dots.
+    Set the node graph background with grid dots.
     """
     from NodeGraphQt.constants import ViewerEnum
     graph.set_grid_mode(ViewerEnum.GRID_DISPLAY_DOTS.value)
@@ -258,7 +259,7 @@ def bg_grid_dots(graph):
 
 def bg_grid_lines(graph):
     """
-    Set background node graph background with grid lines.
+    Set the node graph background with grid lines.
     """
     from NodeGraphQt.constants import ViewerEnum
     graph.set_grid_mode(ViewerEnum.GRID_DISPLAY_LINES.value)
@@ -266,7 +267,7 @@ def bg_grid_lines(graph):
 
 def layout_graph_down(graph):
     """
-    Auto layout the nodes down stream.
+    Auto layout the nodes downstream.
     """
     nodes = graph.selected_nodes() or graph.all_nodes()
     graph.auto_layout_nodes(nodes=nodes, down_stream=True)
@@ -274,7 +275,7 @@ def layout_graph_down(graph):
 
 def layout_graph_up(graph):
     """
-    Auto layout the nodes up stream.
+    Auto layout the nodes upstream.
     """
     nodes = graph.selected_nodes() or graph.all_nodes()
     graph.auto_layout_nodes(nodes=nodes, down_stream=False)
@@ -282,6 +283,40 @@ def layout_graph_up(graph):
 
 def toggle_node_search(graph):
     """
-    show/hide the node search widget.
+    Show/hide the node search widget.
     """
     graph.toggle_node_search()
+
+
+#!/usr/bin/python
+
+# Existing imports and functions...
+
+def search_nodes(graph):
+    """
+    Opens a search dialog to find nodes by name.
+    """
+    from PyQt5.QtWidgets import QInputDialog
+
+    # Prompt the user for a search query
+    query, ok = QInputDialog.getText(graph.viewer(), 'Search Nodes', 'Enter node name:')
+
+    if ok and query:
+        # Search for nodes with names matching the query
+        matching_nodes = []
+        for node in graph.all_nodes():
+            node_name = node.name()
+            if query.lower() in node_name.lower():
+                matching_nodes.append(node)
+
+        if matching_nodes:
+            # Clear current selection
+            graph.clear_selection()
+            # Select matching nodes
+            for node in matching_nodes:
+                node.set_selected(True)
+            # Fit the view to the selection
+            graph.fit_to_selection()
+        else:
+            # Show a message that no nodes were found
+            graph.message_dialog(f'No nodes found matching "{query}".', title='Search Nodes')
