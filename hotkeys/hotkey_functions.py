@@ -287,6 +287,7 @@ def toggle_node_search(graph):
     """
     graph.toggle_node_search()
 
+
 def search_nodes(graph):
     """
     Opens a search dialog to find nodes by name.
@@ -315,3 +316,16 @@ def search_nodes(graph):
         else:
             # Show a message that no nodes were found
             graph.message_dialog(f'No nodes found matching "{query}".', title='Search Nodes')
+
+
+def undo_action(graph):
+    """
+    Undo the last action.
+    """
+    graph.undo_stack().undo()
+
+def redo_action(graph):
+    """
+    Redo the last undone action.
+    """
+    graph.undo_stack().redo()

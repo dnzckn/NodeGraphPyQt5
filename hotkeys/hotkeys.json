@@ -53,6 +53,23 @@
     "items": [
       {
         "type": "command",
+        "label": "Undo",
+        "file": "./hotkey_functions.py",
+        "function_name": "undo_action",
+        "shortcut": "Ctrl+Z"
+      },
+      {
+        "type": "command",
+        "label": "Redo",
+        "file": "./hotkey_functions.py",
+        "function_name": "redo_action",
+        "shortcut": "Ctrl+Y"
+      },
+      {
+        "type": "separator"
+      },
+      {
+        "type": "command",
         "label": "Clear Undo History",
         "file": "./hotkey_functions.py",
         "function_name": "clear_undo",
